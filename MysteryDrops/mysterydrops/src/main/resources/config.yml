@@ -1,0 +1,17 @@
+# autoRegen: should we create a new drop table daily?
+# autoRegenTime: if autoRegen is set to true, what time should we create the new drop table? 24-hr format
+# enableBlockDictionary: Should we enable /blocks?
+#                        (/blocks is an inventory GUI that will show all discovered blocks and where they came from)
+
+# blockDictionaryPlayerDependent: If block dictionary is enabled and a player uses /blocks,
+#                                 shoud we show them only the blocks that THEY have discovered,
+#                                 or blocks that the whole server has discovered? true = only their blocks, false = whole server
+# showLootTablesInBlocksCommand: When using /blocks, should we display all of the discovered vanilla minecraft loot tables?
+# enableMultiWorldSupport: Should we enable multi worlds?
+
+autoRegen: true
+autoRegenTime: "00:00"
+enableBlockDictionary: true
+blockDictionaryPlayerDependent: true
+showLootTablesInBlocksCommand: false
+enableMultiWorldSupport: false

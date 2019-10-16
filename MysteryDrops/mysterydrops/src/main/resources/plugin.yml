@@ -1,0 +1,16 @@
+main: mdrops.mysterydrops.App
+name: MysteryDrops
+version: 1.3
+api-version: 1.14
+commands:
+   regenerate:
+      description: Regenerates random loot tables
+      usage: /regenerate
+      permission: MysteryDrops.admin
+      permission-message: Unknown command. Type "/help" for help.
+
+   blocks:
+      description: Opens a GUI displaying all the discovered item drops
+      usage: /blocks
+      permission: MysteryDrops.basic
+      permission-message: Unknown command. Type "/help" for help.
