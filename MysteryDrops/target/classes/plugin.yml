@@ -1,6 +1,6 @@
 main: mdrops.mysterydrops.App
 name: MysteryDrops
-version: 1.4.4
+version: 1.4.5
 api-version: 1.14
 commands:
    regenerate:
