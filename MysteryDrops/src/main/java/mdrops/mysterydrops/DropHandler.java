@@ -129,6 +129,27 @@ public class DropHandler implements Listener {
                         try { dropFile.save(App.dropTableFile); } catch (IOException err) {}
                         try { e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), new ItemStack(newMaterial)); } catch(IllegalArgumentException exc) {}
                     }
+
+                    String entityName = e.getEntity().getName();
+
+                    if (entityName.contains("x "))
+                        entityName = entityName.split("x ")[1];
+
+                    DiscoveredBlock bl = new DiscoveredBlock(entityName, e.getEntity().getKiller().getUniqueId(), newMaterial);
+                    Bukkit.getLogger().info("Discovered drop from mob," + e.getEntity().getName() + ", drop was " + i.getType().name() + ", dropped " + newMaterial.name() + " instead");
+                    if (!DropFileHandler._DiscoveredBlocks.contains(bl)) {
+                        if (!App.BlockDictionary_PlayerDependent) {
+                            for(DiscoveredBlock block : DropFileHandler._DiscoveredBlocks) {
+                                if (newMaterial.name().equals(block.newMat.name())) {
+                                    DropFileHandler._DiscoveredBlocks.remove(block);
+                                    DropFileHandler._DiscoveredBlocks.add(bl);
+                                    return;
+                                }
+                            }
+                        }
+                        DropFileHandler._DiscoveredBlocks.add(bl);
+                    }
+
                 }
             }
             e.getDrops().clear();    

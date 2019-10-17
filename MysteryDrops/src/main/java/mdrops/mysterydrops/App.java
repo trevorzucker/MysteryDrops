@@ -103,28 +103,26 @@ public class App extends JavaPlugin {
             boolean isMat = s.contains("MAT_");
             boolean isLootTbl = s.contains("TBL_");
 
-            while (!isMat && !isLootTbl) {
-                isMat = true;
-            }
-
             String[] splitter = blockDictionary.getString(s).split("_iBsrJka5aX_");
             UUID uuid = UUID.fromString(splitter[0]);
-            Material old = MaterialHandler.GetByName(splitter[1]);
-            Material newMat = Material.AIR;
-            LootTables tbl = null;
+            Material newMat = null; LootTables tbl = null;
             
             if (isMat)
                 newMat = MaterialHandler.GetByName(s.replace("MAT_", ""));
 
-            if (isMat && newMat != Material.AIR && old != Material.AIR) {
-                DiscoveredBlock blk = new DiscoveredBlock(old, uuid, newMat);
+            if (isMat && newMat != null && uuid != null) {
+                DiscoveredBlock blk;
+                if (MaterialHandler.GetByName(splitter[1]) == null)
+                    blk = new DiscoveredBlock(splitter[1], uuid, newMat);
+                else
+                    blk = new DiscoveredBlock(MaterialHandler.GetByName(splitter[1]), uuid, newMat);
                 DropFileHandler._DiscoveredBlocks.add(blk);
             }
 
             if (isLootTbl) {
                 tbl = MaterialHandler.GetLootTableByKey(s.replace("TBL_", ""));
                 if (tbl != null) {
-                    DiscoveredLootTable _tbl = new DiscoveredLootTable(old, uuid, tbl);
+                    DiscoveredLootTable _tbl = new DiscoveredLootTable(MaterialHandler.GetByName(splitter[1]), uuid, tbl);
                     DropFileHandler.DiscoveredLootTables.add(_tbl);
                 }
             }
@@ -156,7 +154,10 @@ public class App extends JavaPlugin {
     public void onDisable() {
         YamlConfiguration blockDictionary = YamlConfiguration.loadConfiguration(blockDictionaryFile);
         for (DiscoveredBlock b : DropFileHandler._DiscoveredBlocks) {
-            blockDictionary.set("MAT_" + b.newMat.name(), b.discoverer + "_iBsrJka5aX_" + b.old.name());
+            if (!b.isFromMob)
+                blockDictionary.set("MAT_" + b.newMat.name(), b.discoverer + "_iBsrJka5aX_" + b.old.name());
+            else
+                blockDictionary.set("MAT_" + b.newMat.name(), b.discoverer + "_iBsrJka5aX_" + b.mobName);
         }
 
         for (DiscoveredLootTable b : DropFileHandler.DiscoveredLootTables) {

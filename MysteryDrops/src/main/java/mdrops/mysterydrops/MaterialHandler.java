@@ -17,7 +17,7 @@ public class MaterialHandler {
 
     public static Material GetByName(String name) {
         Material[] items = GetAllItems();
-        Material m = Material.AIR;
+        Material m = null;
         for (int i = 0; i < items.length; i++) {
             if (name.equals(items[i].name()))
                 m = items[i];

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -29,7 +28,7 @@ public class Commands {
             if (pl.getUniqueId() != p.getUniqueId()) {
                 pl.sendMessage(ChatColor.WHITE + "[SERVER] " + ChatColor.GREEN + "Droptables are being regenerated!");
             }
-            pl.sendTitle("", p.getDisplayName() + "is re-randomizing drops!", 10, 70, 20);
+            pl.sendTitle("", p.getDisplayName() + " is re-randomizing drops!", 10, 70, 20);
         }
 
         File dropTableFile = new File(App.getPlugin(App.class).getDataFolder(), "droptable.yml");
@@ -47,74 +46,63 @@ public class Commands {
     public static HashMap<UUID, ArrayList<Inventory>> PlayerBlockInventories = new HashMap<>();
 
     public static boolean BlocksCommand(CommandSender sender, Command cmd, String label, String[] args) {
+
         if (!App.BlockDictionary_Enabled) {
             sender.sendMessage("This command has been disabled");
             return true;
         }
+
+        Player ply = (Player)sender;
+
         ArrayList<Inventory> menus = new ArrayList<>();
         menus.add(Bukkit.createInventory(null, 27, "Discovered blocks - Page 1"));
 
+        // create "next" and "previous" itemstacks
         ItemStack next = new ItemStack(Material.ENCHANTED_BOOK); ItemStack previous = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta nextMeta = next.getItemMeta(); ItemMeta previousMeta = next.getItemMeta();
         nextMeta.setDisplayName(ChatColor.BOLD + "Next Page"); previousMeta.setDisplayName(ChatColor.BOLD + "Previous Page");
         next.setItemMeta(nextMeta); previous.setItemMeta(previousMeta);
 
-        Iterator<DiscoveredBlock> it = DropFileHandler._DiscoveredBlocks.iterator();
-
         ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
 
-        int currentMenu = 0;
-        while(it.hasNext()) {
-            DiscoveredBlock blk = it.next();
-            Player pl = null;
-            for(Player p :  Bukkit.getServer().getOnlinePlayers()) {
-                if (blk.discoverer == p.getUniqueId())
-                    pl = p;
-            }
-
-            if (App.BlockDictionary_PlayerDependent && pl != ((Player)sender))
+        for(DiscoveredBlock block : DropFileHandler._DiscoveredBlocks) {
+            if (block == null || (App.BlockDictionary_PlayerDependent && block.discoverer != ply.getUniqueId()) || Bukkit.getPlayer(block.discoverer) == null)
                 continue;
-            Material old = blk.old;
+
+            Material newMat = block.newMat; ItemStack stack = new ItemStack(newMat);
+
             String oldName = "";
-            String[] nameSplit = old.name().replace("_", " ").toLowerCase().split(" ");
-            for(int j = 0; j < nameSplit.length; j++) {
-                nameSplit[j] = nameSplit[j].substring(0, 1).toUpperCase() + nameSplit[j].substring(1);
-                if (j != nameSplit.length - 1)
-                    oldName += nameSplit[j] + " ";
-                else
-                    oldName += nameSplit[j];
+            if (!block.isFromMob) {
+                String[] nameSplit = block.old.name().replace("_", " ").toLowerCase().split(" ");
+                for(int j = 0; j < nameSplit.length; j++) {
+                    nameSplit[j] = nameSplit[j].substring(0, 1).toUpperCase() + nameSplit[j].substring(1);
+                    if (j != nameSplit.length - 1)
+                        oldName += nameSplit[j] + " ";
+                    else
+                        oldName += nameSplit[j];
+                }
             }
-            Material newMat = blk.newMat;
-
-            ItemStack stack = new ItemStack(newMat);
-            ItemMeta meta = stack.getItemMeta();
-            Player ply = (Player)sender;
-            String plName = Bukkit.getOfflinePlayer(blk.discoverer).getName();
-
-            if (pl != null && blk.discoverer == ply.getUniqueId())
-                meta.setLore(Arrays.asList("Discovered by " + ChatColor.BOLD + "you", "Dropped from " + oldName));
             else
-                meta.setLore(Arrays.asList("Discovered by "  + ChatColor.BOLD + "" + plName, "Dropped from " + oldName));
+                oldName = block.mobName;
 
+            ItemMeta meta = stack.getItemMeta();
+            String discovererName = Bukkit.getPlayer(block.discoverer).getDisplayName();
+            if (block.discoverer == ply.getUniqueId())
+                discovererName = "you";
+
+            meta.setLore(Arrays.asList("Discovered by " + ChatColor.BOLD + discovererName, "Dropped from " + oldName));
             stack.setItemMeta(meta);
-
             stacks.add(stack);
         }
 
         if (App.ShowLootTablesInBlocks) {
-            Iterator<DiscoveredLootTable> it2 = DropFileHandler.DiscoveredLootTables.iterator();
+            for(DiscoveredLootTable table : DropFileHandler.DiscoveredLootTables) {
 
-            while(it2.hasNext()) {
-                DiscoveredLootTable table = it2.next();
-                Player pl = null;
-                for(Player p :  Bukkit.getServer().getOnlinePlayers()) {
-                    if (table.discoverer == p.getUniqueId())
-                        pl = p;
-                }
-
-                if (App.BlockDictionary_PlayerDependent && pl != ((Player)sender))
+                if (table == null || (App.BlockDictionary_PlayerDependent && table.discoverer != ply.getUniqueId()) || Bukkit.getPlayer(table.discoverer) == null)
                     continue;
-                Material old = table.old;
+
+                // make a "user friendly" loot table display name
+
                 String lootTableName = "";
                 String[] preSeperator = table.table.getKey().getKey().split("/");
                 String seperator = preSeperator[preSeperator.length - 1];
@@ -126,6 +114,7 @@ public class Commands {
                             seperator += " ";
                     }
                 }
+
                 String[] nameSplit = seperator.replace("_", " ").toLowerCase().split(" ");
                 for(int j = 0; j < nameSplit.length; j++) {
                     nameSplit[j] = nameSplit[j].substring(0, 1).toUpperCase() + nameSplit[j].substring(1);
@@ -137,7 +126,7 @@ public class Commands {
                 lootTableName += " Loot Table";
 
                 String oldName = "";
-                String[] nameSplit2 = old.name().replace("_", " ").toLowerCase().split(" ");
+                String[] nameSplit2 = table.old.name().replace("_", " ").toLowerCase().split(" ");
                 for(int j = 0; j < nameSplit2.length; j++) {
                     nameSplit2[j] = nameSplit2[j].substring(0, 1).toUpperCase() + nameSplit2[j].substring(1);
                     if (j != nameSplit.length - 1)
@@ -146,17 +135,14 @@ public class Commands {
                         oldName += nameSplit2[j];
                 }
 
-                ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-                SkullMeta meta = (SkullMeta)skull.getItemMeta();
-                meta.setOwningPlayer(Bukkit.getOfflinePlayer(table.discoverer));
-                meta.setDisplayName(lootTableName);
-                String plName = Bukkit.getOfflinePlayer(table.discoverer).getName();
+                ItemStack skull = new ItemStack(Material.PLAYER_HEAD); SkullMeta meta = (SkullMeta)skull.getItemMeta();
+                meta.setOwningPlayer(Bukkit.getOfflinePlayer(table.discoverer)); meta.setDisplayName(lootTableName);
+                String discovererName = Bukkit.getOfflinePlayer(table.discoverer).getName();
+
+                if (table.discoverer == ply.getUniqueId())
+                    discovererName = "you";
             
-                Player ply = (Player)sender;
-                if (pl != null && table.discoverer == ply.getUniqueId())
-                    meta.setLore(Arrays.asList("Discovered by " + ChatColor.BOLD + "you", "Dropped from " + oldName));
-                else
-                    meta.setLore(Arrays.asList("Discovered by "  + ChatColor.BOLD + "" + plName, "Dropped from " + oldName));
+                    meta.setLore(Arrays.asList("Discovered by "  + ChatColor.BOLD + discovererName, "Dropped from " + oldName));
 
                 skull.setItemMeta(meta);
 
@@ -199,6 +185,8 @@ public class Commands {
         if (stacks.size() >= 27) {
             menus.get(0).setItem(26, next);
         }
+
+        int currentMenu = 0;
 
         for(int i = 0; i < stacks.size(); i++) {
             menus.get(currentMenu).addItem(stacks.get(i));
