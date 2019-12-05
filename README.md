@@ -42,7 +42,7 @@ My first public, open source plugin
   
   - Competitive achievement system (for number of discovered blocks)
   
-  - Replayability features (for example, removing tools from randomly being dropped. This way, players can make progression towards being able to break tougher blocks. Tools are achieved by completing a random server-generated objective, such as "destroy X block" or "discover 14 new blocks"
+  - Replayability features (for example, removing tools from randomly being dropped **and** crafted. This way, players can make progression towards being able to break tougher blocks. Tools are achieved by completing a random server-generated objective, such as "destroy X block" or "discover 14 new blocks"
 
 ### Problems with this plugin:
   Since all blocks are randomized, that feature innately **kills** replayability. What if a player gets a diamond pickaxe from a dirt block? A beacon from a leaf block? The problem is that after a while, players get sick of the staleness and there is no valuable currency, since every item has an equal chance of being dropped (and if the config is set to re-randomize daily, the chances of naturally rare drops dropping skyrockets). I am attempting to resolve this problem with the features I mentioned in the planned features section.
