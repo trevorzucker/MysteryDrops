@@ -8,6 +8,8 @@
 #                                 or blocks that the whole server has discovered? true = only their blocks, false = whole server
 # showLootTablesInBlocksCommand: When using /blocks, should we display all of the discovered vanilla minecraft loot tables?
 # enableMultiWorldSupport: Should we enable multi worlds?
+# mysql_enable: Should we enable MySQL, for stats?
+# mysql_host, mysql_user, mysql_pass, mysql_db: Connection info
 
 autoRegen: true
 autoRegenTime: "00:00"
@@ -15,3 +17,8 @@ enableBlockDictionary: true
 blockDictionaryPlayerDependent: true
 showLootTablesInBlocksCommand: false
 enableMultiWorldSupport: false
+mysql_enable: false
+mysql_host: "host"
+mysql_user: "user"
+mysql_pass: "pass"
+mysql_db: "db"

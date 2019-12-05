@@ -1,6 +1,6 @@
 main: mdrops.mysterydrops.App
 name: MysteryDrops
-version: 1.4.5
+version: 1.4.6
 api-version: 1.14
 commands:
    regenerate:
@@ -12,5 +12,11 @@ commands:
    blocks:
       description: Opens a GUI displaying all the discovered item drops
       usage: /blocks
+      permission: MysteryDrops.basic
+      permission-message: Unknown command. Type "/help" for help.
+
+   mdtop:
+      description: Opens a GUI displaying players and their discovered block counts
+      usage: /mdtop
       permission: MysteryDrops.basic
       permission-message: Unknown command. Type "/help" for help.

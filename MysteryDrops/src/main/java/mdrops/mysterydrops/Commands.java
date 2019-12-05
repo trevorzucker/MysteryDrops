@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -44,6 +45,7 @@ public class Commands {
     }
 
     public static HashMap<UUID, ArrayList<Inventory>> PlayerBlockInventories = new HashMap<>();
+    public static HashMap<UUID, ArrayList<Inventory>> PlayerTopInventories = new HashMap<>();
 
     public static boolean BlocksCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
@@ -66,7 +68,7 @@ public class Commands {
         ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
 
         for(DiscoveredBlock block : DropFileHandler._DiscoveredBlocks) {
-            if (block == null || (App.BlockDictionary_PlayerDependent && block.discoverer != ply.getUniqueId()) || Bukkit.getPlayer(block.discoverer) == null)
+            if (block == null || (App.BlockDictionary_PlayerDependent && block.discoverer != ply.getUniqueId()))
                 continue;
 
             Material newMat = block.newMat; ItemStack stack = new ItemStack(newMat);
@@ -86,7 +88,9 @@ public class Commands {
                 oldName = block.mobName;
 
             ItemMeta meta = stack.getItemMeta();
-            String discovererName = Bukkit.getPlayer(block.discoverer).getDisplayName();
+            String discovererName = "Unknown";
+            if (Bukkit.getOfflinePlayer(block.discoverer) != null)
+                discovererName = Bukkit.getOfflinePlayer(block.discoverer).getName();
             if (block.discoverer == ply.getUniqueId())
                 discovererName = "you";
 
@@ -203,6 +207,64 @@ public class Commands {
         Player p = (Player)sender;
         p.openInventory(menus.get(0));
         PlayerBlockInventories.put(p.getUniqueId(), menus);
+        return true;
+    }
+
+    public static boolean BlocksTopCommand(CommandSender sender, Command cmd, String label, String[] args) {
+
+        ArrayList<Inventory> menus = new ArrayList<>();
+        menus.add(Bukkit.createInventory(null, 27, "Top Players - Page 1"));
+
+        // create "next" and "previous" itemstacks
+        ItemStack next = new ItemStack(Material.ENCHANTED_BOOK); ItemStack previous = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta nextMeta = next.getItemMeta(); ItemMeta previousMeta = next.getItemMeta();
+        nextMeta.setDisplayName(ChatColor.BOLD + "Next Page"); previousMeta.setDisplayName(ChatColor.BOLD + "Previous Page");
+        next.setItemMeta(nextMeta); previous.setItemMeta(previousMeta);
+
+        ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
+
+        for(Entry<UUID, Integer> set : App.DiscoveredBlockCount.entrySet()) {
+
+            ItemStack skull = new ItemStack(Material.PLAYER_HEAD); SkullMeta meta = (SkullMeta)skull.getItemMeta();
+            meta.setOwningPlayer(Bukkit.getOfflinePlayer(set.getKey())); meta.setDisplayName(Bukkit.getOfflinePlayer(set.getKey()).getName());
+
+            meta.setLore(Arrays.asList("Block count: " + set.getValue()));
+
+            skull.setItemMeta(meta);
+
+            stacks.add(skull);
+        }
+
+        stacks.sort(new Comparator<ItemStack>() {
+            @Override
+            public int compare(ItemStack v1, ItemStack v2) {
+                int v1Count = Integer.parseInt(v1.getItemMeta().getLore().get(0).split(": ")[1]);
+                int v2Count = Integer.parseInt(v2.getItemMeta().getLore().get(0).split(": ")[1]);
+                return v2Count - v1Count;
+            }
+        });
+
+        if (stacks.size() >= 27) {
+            menus.get(0).setItem(26, next);
+        }
+
+        int currentMenu = 0;
+
+        for(int i = 0; i < stacks.size(); i++) {
+            menus.get(currentMenu).addItem(stacks.get(i));
+            if (menus.get(currentMenu).firstEmpty() == -1) {
+                currentMenu++;
+                menus.add(Bukkit.createInventory(null, 27, "Top Players - Page " + (currentMenu + 1)));
+                if (stacks.size() >= (27 * (currentMenu + 1) - 2)) {
+                    menus.get(currentMenu).setItem(26, next);
+                }
+                menus.get(currentMenu).setItem(18, previous);
+            }
+        }
+        
+        Player p = (Player)sender;
+        p.openInventory(menus.get(0));
+        PlayerTopInventories.put(p.getUniqueId(), menus);
         return true;
     }
 }

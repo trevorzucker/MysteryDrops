@@ -18,8 +18,9 @@ public class DropFileHandler {
 
     static App plugin = App.getPlugin(App.class);
 
-    static HashMap<Material, Material> DropTable;
-    static HashMap<Material, LootTables> DropTableWithLoot;
+    public static HashMap<Material, Material> DropTable;
+    public static HashMap<Material, LootTables> DropTableWithLoot;
+    public static HashMap<Material, String> Blacklist;
 
     // Original item, Discoverer, New item
     static ArrayList<DiscoveredBlock> _DiscoveredBlocks = new ArrayList<DiscoveredBlock>();
@@ -118,8 +119,10 @@ public class DropFileHandler {
     public static void LoadDropTables() {
         DropTable = new HashMap<>();
         DropTableWithLoot = new HashMap<>();
+        Blacklist = new HashMap<>();
         App.dropTableFile = new File(plugin.getDataFolder(), "droptable.yml");
         YamlConfiguration drops = YamlConfiguration.loadConfiguration(App.dropTableFile);
+        YamlConfiguration blacklist = YamlConfiguration.loadConfiguration(App.dropTableBlacklistFile);
         String[] dropString = drops.saveToString().split("\\r?\\n");
         for(int i = 0; i < MaterialHandler.GetAllItems().length; i++) {
             String[] dropLine = dropString[i].split(": ");
@@ -130,6 +133,10 @@ public class DropFileHandler {
             else
                 DropTable.put(MaterialHandler.GetByName(dropLine[0]), MaterialHandler.GetByName(dropLine[1]));
             //plugin.getLogger().info("Breaking " + dropLine[0] + " will drop " + dropLine[1]);
+        }
+
+        for(String s : blacklist.getKeys(false)) {
+            Blacklist.put(MaterialHandler.GetByName(s), blacklist.getString(s));
         }
     }
 }

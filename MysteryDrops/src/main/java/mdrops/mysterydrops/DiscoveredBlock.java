@@ -22,5 +22,8 @@ class DiscoveredBlock {
         discoverer = pl;
         this.newMat = newMat;
         isFromMob = true;
+
+        if (old.split("§[1-9]").length > 1)
+            mobName = old.split("§[1-9]")[1];
     }
 }
